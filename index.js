@@ -17,12 +17,36 @@ const client = new MongoClient(uri, {
   useUnifiedTopology: true,
   serverApi: ServerApiVersion.v1,
 });
-client.connect((err) => {
-  const collection = client.db("test").collection("devices");
-  // perform actions on the collection object
-  client.close();
-});
 
+async function run() {
+  try {
+    const serviceCollection = client.db("chobiGhor").collection("services");
+
+    //ONLY 3 SERVICES
+    app.get("/services", async (req, res) => {
+      const query = {};
+      const cursos = serviceCollection.find(query);
+      const services = await cursos.limit(3).toArray();
+      res.send(services);
+    });
+
+    //ALL SERVICE
+    app.get("/allServices", async (req, res) => {
+      const query = {};
+      const cursos = serviceCollection.find(query);
+      const services = await cursos.toArray();
+      res.send(services);
+    });
+  } finally {
+  }
+}
+run().catch((err) => console.log(err));
+
+// .
+// .
+// .
+// .
+// ============================
 app.get("/", (req, res) => {
   res.send("Chobi Ghor server is loading");
 });
