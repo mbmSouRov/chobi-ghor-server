@@ -118,7 +118,6 @@ async function run() {
     app.get("/userReviews", verifyJWT, async (req, res) => {
       const decoded = req.decoded;
       // console.log("inside order api", decoded);
-
       if (decoded.email !== req.query.email) {
         res.status(403).send({ message: "unauthorized access" });
       }
@@ -156,15 +155,11 @@ async function run() {
       res.send(result);
     });
   } finally {
+    console.log("All Completed");
   }
 }
 run().catch((err) => console.log(err));
 
-// .
-// .
-// .
-// .
-// ============================
 app.get("/", (req, res) => {
   res.send("Chobi Ghor server is loading");
 });
