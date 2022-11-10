@@ -19,10 +19,33 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
+function verifyJWT(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    res.send(401).send({ message: "unauthorized access" });
+  }
+  const token = authHeader.split(" ")[1];
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+    if (err) {
+      return res.status(401).send({ message: "unauthorized access" });
+    }
+    req.decoded = decoded;
+    next();
+  });
+}
+
 async function run() {
   try {
     const serviceCollection = client.db("chobiGhor").collection("services");
     const reviewsCollection = client.db("chobiGhor").collection("reviews");
+
+    app.post("/jwt", (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "300h",
+      });
+      res.send({ token });
+    });
 
     //ONLY 3 SERVICES
     app.get("/services", async (req, res) => {
@@ -34,7 +57,8 @@ async function run() {
     //ALL SERVICE
     app.get("/allServices", async (req, res) => {
       const query = {};
-      const cursos = serviceCollection.find(query);
+      const sort = { _id: -1 };
+      const cursos = serviceCollection.find(query).sort(sort);
       const services = await cursos.toArray();
       res.send(services);
     });
@@ -91,7 +115,14 @@ async function run() {
     });
 
     //For each user, reviews extract
-    app.get("/userReviews", async (req, res) => {
+    app.get("/userReviews", verifyJWT, async (req, res) => {
+      const decoded = req.decoded;
+      // console.log("inside order api", decoded);
+
+      if (decoded.email !== req.query.email) {
+        res.status(403).send({ message: "unauthorized access" });
+      }
+
       let query = {};
       if (req.query.email) {
         query = {
