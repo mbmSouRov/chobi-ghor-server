@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 
@@ -100,6 +101,20 @@ async function run() {
       const cursor = reviewsCollection.find(query);
       const allReviews = await cursor.toArray();
       res.send(allReviews);
+    });
+
+    //Update a user review
+    app.patch("/allReview/:id", async (req, res) => {
+      const id = req.params.id;
+      const status = req.body.textArea;
+      const query = { _id: ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          textArea: status,
+        },
+      };
+      const result = await reviewsCollection.updateOne(query, updateDoc);
+      res.send(result);
     });
 
     //DELETE a users review comment
