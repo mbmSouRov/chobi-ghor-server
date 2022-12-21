@@ -50,7 +50,8 @@ async function run() {
     //ONLY 3 SERVICES
     app.get("/services", async (req, res) => {
       const query = {};
-      const cursos = serviceCollection.find(query);
+      const sort = { _id: -1 };
+      const cursos = serviceCollection.find(query).sort(sort);
       const services = await cursos.limit(3).toArray();
       res.send(services);
     });
